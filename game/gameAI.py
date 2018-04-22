@@ -35,7 +35,6 @@ sys.path.append(os.path.abspath("../student"))
 import config
 configuration = config.configuration
 
-
 text_size = configuration['text_size']
 tile_size = configuration['tile_size']
 
@@ -81,9 +80,9 @@ def init_mygame():
     random.seed(configuration['seed'])
     
     image_files = dict()
-    for tilekey, tiledict in configuration['maptiles'].iteritems():
+    for tilekey, tiledict in configuration['maptiles'].items():
         image_files[tilekey]= tiledict['img']
-    for tilekey, tiledict in configuration['agentTiles'].iteritems():
+    for tilekey, tiledict in configuration['agentTiles'].items():
         image_files[tilekey]= tiledict
     
     aiBaseName = configuration['agentBaseTile']      

@@ -3,9 +3,25 @@
     Class gameProblem, implements simpleai.search.SearchProblem
 '''
 
-
-from simpleai.search import SearchProblem
 import simpleai.search
+from simpleai.search import SearchProblem, astar
+from simpleai.search.viewers import WebViewer
+
+    # --------------- State Definition -----------------
+
+class GameState:
+        
+    def __init__(self, position, goals, goal_count):
+        self.position  = position # tuple (x,y)
+        self.goals = goals # list of [(x1,y1), (x2, y2), ...]
+        self.goal_count = goal_count # number of goal tiles left
+
+    def goals_left(self):
+        return self.goal_count
+    def current_pos(self):
+        return self.position
+    def goals(self):
+        return self.goals
 
 class GameProblem(SearchProblem):
 
@@ -17,7 +33,6 @@ class GameProblem(SearchProblem):
     GOAL=None
     CONFIG=None
     AGENT_START=None
-
 
     # --------------- Common functions to a SearchProblem -----------------
     
@@ -56,9 +71,13 @@ class GameProblem(SearchProblem):
 
 
     def setup (self):
-        initial_state = None
-        final_state = None
-        algorithm = None
+        position = self.CONFIG.get("agentInit")
+        goals = self.POSITIONS.get("goal")
+        goal_count = len(goals)
+
+        initial_state = GameState(position, goals, goal_count)
+        final_state = GameState(position, goals, 0)
+        algorithm = astar(self, False, WebViewer())
             
         return initial_state,final_state,algorithm
 
