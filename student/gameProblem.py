@@ -4,24 +4,28 @@
 '''
 
 import simpleai.search
-from simpleai.search import SearchProblem, astar
+from simpleai.search import SearchProblem, breadth_first
 from simpleai.search.viewers import WebViewer
 
-    # --------------- State Definition -----------------
+# --------------- State Definition -----------------
 
 class GameState:
         
-    def __init__(self, position, goals, goal_count):
+    def __init__(self, position, goals):
         self.position  = position # tuple (x,y)
         self.goals = goals # list of [(x1,y1), (x2, y2), ...]
-        self.goal_count = goal_count # number of goal tiles left
 
-    def goals_left(self):
-        return self.goal_count
-    def current_pos(self):
-        return self.position
-    def goals(self):
-        return self.goals
+    def __hash__(self):
+        return hash(repr(self))
+
+    def __eq__(self, other):
+        return isinstance(other, GameState)
+
+    def update(self, new_position, new_goals):
+        self.position = new_position
+        self.goals = new_goals
+
+# --------------- GameProblem Definition -----------------
 
 class GameProblem(SearchProblem):
 
@@ -33,6 +37,7 @@ class GameProblem(SearchProblem):
     GOAL=None
     CONFIG=None
     AGENT_START=None
+    ALGORITHM=None
 
     # --------------- Common functions to a SearchProblem -----------------
     
@@ -41,11 +46,24 @@ class GameProblem(SearchProblem):
         
         '''Returns a LIST of the actions that may be executed in this state
         '''
-        acciones = []
+        actions = []
+        pos = state.position
+        pos_east = (pos[0]+1, pos[1])
+        pos_west = (pos[0]-1, pos[1])
+        pos_north = (pos[0], pos[1]+1)
+        pos_south = (pos[0], pos[1]-1)
         
-        return acciones
+        if self.can_fly(pos_east):
+            actions.append('East')
+        if self.can_fly(pos_west):
+            actions.append('West')
+        if self.can_fly(pos_north):
+            actions.append('North')
+        if self.can_fly(pos_south):
+            actions.append('South')
+        
+        return actions
     
-
     def result(self, state, action):
         '''Returns the state reached from this state when the given action is executed
         '''
@@ -54,8 +72,8 @@ class GameProblem(SearchProblem):
 
     def is_goal(self, state):
         '''Returns true if state is the final state
-        '''
-        return False
+        ''' 
+        return state == self.GOAL
 
     def cost(self, state, action, state2):
         '''Returns the cost of applying `action` from `state` to `state2`.
@@ -69,18 +87,26 @@ class GameProblem(SearchProblem):
         '''
         return 0
 
-
     def setup (self):
-        position = self.CONFIG.get("agentInit")
-        goals = self.POSITIONS.get("goal")
-        goal_count = len(goals)
 
-        initial_state = GameState(position, goals, goal_count)
-        final_state = GameState(position, goals, 0)
-        algorithm = astar(self, False, WebViewer())
-            
+        base = self.CONFIG.get("agentInit")
+        goals = self.POSITIONS.get("goal")
+
+        initial_state = GameState(base, goals)
+        final_state = GameState(base, [])
+        algorithm = breadth_first   
+        
         return initial_state,final_state,algorithm
 
+    # --------------- Helper Methods  ----------------- #
+    
+    def can_fly(self, position):
+        print(self.CONFIG)  
+        map = self.CONFIG.get("map_size")
+
+        if 0 <= position[0] < map[0] and 0 <= position[1] <= map[1]:  
+            return self.MAP[position[0]][position[1]][1] is not "sea"
+        return False
 
     # -------------------------------------------------------------- #
     # --------------- DO NOT EDIT BELOW THIS LINE  ----------------- #
@@ -95,6 +121,7 @@ class GameProblem(SearchProblem):
                None if the attribute does not exist
                Value of the attribute otherwise
         '''
+        print(position[1])
         tileAttributes=self.MAP[position[0]][position[1]][2]
         if attributeName in tileAttributes.keys():
             return tileAttributes[attributeName]
@@ -103,10 +130,11 @@ class GameProblem(SearchProblem):
         
     # THIS INITIALIZATION FUNCTION HAS TO BE CALLED BEFORE THE SEARCH
     def initializeProblem(self,map,positions,conf,aiBaseName):
-        
+        print("SETUP #1")
+
         # Loads the problem attributes: self.AGENT_START, self.POSITIONS,etc.
         if self.mapInitialization(map,positions,conf,aiBaseName):
-    
+            print("SETUP #2")
             initial_state,final_state,algorithm = self.setup()
             
             self.INITIAL_STATE=initial_state
