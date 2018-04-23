@@ -33,7 +33,7 @@ def searchSolution(map,configuration,state,aiBaseName,tracep):
     problem = GameProblem()
     problem.initializeProblem(map=map,positions=mapAsPositions,conf=configuration,aiBaseName=aiBaseName)
     algorithm=problem.ALGORITHM
-    use_viewer=WebViewer()
+    use_viewer=ConsoleViewer()
 
     print ("----------------------- PROBLEM INFORMATION ------------------")
     print ("-- Initial State  --")

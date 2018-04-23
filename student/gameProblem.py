@@ -63,9 +63,9 @@ class GameProblem(SearchProblem):
         elif action is "West":
             new_position = (pos[0]-1, pos[1])
         elif action is "North":
-            new_position = (pos[0], pos[1]+1)
-        elif action is "South":
             new_position = (pos[0], pos[1]-1)
+        elif action is "South":
+            new_position = (pos[0], pos[1]+1)
 
         # if at goal, update goal set
         if new_position in goals_left:
@@ -85,10 +85,11 @@ class GameProblem(SearchProblem):
            The returned value is a number (integer or floating point).
            By default this function returns `1`.
         '''
-        cost = self.getAttribute(state2[0], "cost") 
-        if cost is not None:
-            return cost
-        return 1000
+        #print("state" + str(state2))
+        #cost = self.getAttribute(state2[0], "cost") 
+        #if cost is not None:
+        #    return cost
+        return 1
 
     def heuristic(self, state):
         '''Returns the heuristic for `state`
@@ -128,7 +129,6 @@ class GameProblem(SearchProblem):
         sx, sy = start
         ex, ey = end
         return abs(ex - sx) + abs(ey - sy)
-
     
     # -------------------------------------------------------------- #
     # --------------- DO NOT EDIT BELOW THIS LINE  ----------------- #
@@ -143,6 +143,10 @@ class GameProblem(SearchProblem):
                None if the attribute does not exist
                Value of the attribute otherwise
         '''
+        print(self.CONFIG.get("map_size"))
+        print(position)
+        print([position[1]])
+        print(self.MAP[position[0]][position[1]])
         tileAttributes=self.MAP[position[0]][position[1]][2]
         if attributeName in tileAttributes.keys():
             return tileAttributes[attributeName]
