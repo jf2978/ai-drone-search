@@ -30,7 +30,6 @@ class GameProblem(SearchProblem):
 
         # current state information
         actions = []
-        map_size = self.CONFIG.get("map_size")
         pos = state[0]
 
         # potential moves
@@ -40,13 +39,13 @@ class GameProblem(SearchProblem):
         pos_south = (pos[0], pos[1]+1)
         
         # append to action list if valid move
-        if self.can_fly(pos_east, map_size):
+        if self.can_fly(pos_east):
             actions.append('East')
-        if self.can_fly(pos_west, map_size):
+        if self.can_fly(pos_west):
             actions.append('West')
-        if self.can_fly(pos_north, map_size):
+        if self.can_fly(pos_north):
             actions.append('North')
-        if self.can_fly(pos_south, map_size):
+        if self.can_fly(pos_south):
             actions.append('South')
       
         return actions
@@ -85,10 +84,10 @@ class GameProblem(SearchProblem):
            The returned value is a number (integer or floating point).
            By default this function returns `1`.
         '''
-        #cost = self.getAttribute(state2[0], "cost") 
-        #if cost is not None:
-        #    return cost
-        return 1  
+        cost = self.getAttribute(state2[0], "cost") 
+        if cost is not None:
+            return cost
+        return sys.maxsize
 
     def heuristic(self, state):
         '''Returns the heuristic for `state`
@@ -96,19 +95,22 @@ class GameProblem(SearchProblem):
         current = state[0]
         goals_left = state[1]
         
+        # gives priority to paths with fewer goals, based on this weighting
+        MULTIPLIER = 5
+        
         if len(goals_left) > 0:
             goal_distances = set()
 
             for location in goals_left:
                 goal_distances.add(self.dist(current, location))
 
-            return min(goal_distances) + (5 * len(goals_left))
+            return min(goal_distances) + (MULTIPLIER * len(goals_left))
         else:
             return self.dist(current, self.AGENT_START)
 
     def setup (self):
 
-        base = tuple(self.CONFIG.get("agentInit"))
+        base = self.AGENT_START
         goals = frozenset(self.POSITIONS.get("goal"))
 
         initial_state = (base, goals)
@@ -119,9 +121,9 @@ class GameProblem(SearchProblem):
 
     # --------------- Helper Methods  ----------------- #
     
-    def can_fly(self, position, map):
-        if 0 <= position[0] < map[0] and 0 <= position[1] < map[1]:  
-            return self.MAP[position[0]][position[1]][1] is not "sea"
+    def can_fly(self, position):
+        if 0 <= position[0] < len(self.MAP) and 0 <= position[1] < len(self.MAP[0]):  
+            return self.MAP[position[0]][position[1]][2].get('blocked') is not True
         return False
 
     def dist(self, start, end):
