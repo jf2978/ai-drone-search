@@ -36,8 +36,8 @@ class GameProblem(SearchProblem):
         # potential moves
         pos_east = (pos[0]+1, pos[1])
         pos_west = (pos[0]-1, pos[1])
-        pos_north = (pos[0], pos[1]+1)
-        pos_south = (pos[0], pos[1]-1)
+        pos_north = (pos[0], pos[1]-1)
+        pos_south = (pos[0], pos[1]+1)
         
         # append to action list if valid move
         if self.can_fly(pos_east, map_size):
@@ -85,11 +85,10 @@ class GameProblem(SearchProblem):
            The returned value is a number (integer or floating point).
            By default this function returns `1`.
         '''
-        #print("state" + str(state2))
         #cost = self.getAttribute(state2[0], "cost") 
         #if cost is not None:
         #    return cost
-        return 1
+        return 1  
 
     def heuristic(self, state):
         '''Returns the heuristic for `state`
@@ -103,7 +102,7 @@ class GameProblem(SearchProblem):
             for location in goals_left:
                 goal_distances.add(self.dist(current, location))
 
-            return min(goal_distances) + (30 * len(goals_left))
+            return min(goal_distances) + (5 * len(goals_left))
         else:
             return self.dist(current, self.AGENT_START)
 
