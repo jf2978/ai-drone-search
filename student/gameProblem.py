@@ -21,9 +21,24 @@ class GameState:
     def __eq__(self, other):
         return isinstance(other, GameState)
 
-    def update(self, new_position, new_goals):
-        self.position = new_position
-        self.goals = new_goals
+    def __str__(self):
+        return "State: < %s %s > " % (self.position, self.goals)
+
+    def update(self, action):
+        # update position
+        if action is "East":
+            self.position = (self.position[0]+1, self.position[1]) 
+        elif action is "West":
+            self.position = (self.position[0]-1, self.position[1])
+        elif action is "North":
+            self.position = (self.position[0], self.position[1]+1)
+        elif action is "South":
+            self.position = (self.position[0], self.position[1]-1)
+
+        # if at goal, mark as visited
+        if self.position in goals:
+            goals.remove()  
+        
 
 # --------------- GameProblem Definition -----------------
 
@@ -67,8 +82,7 @@ class GameProblem(SearchProblem):
     def result(self, state, action):
         '''Returns the state reached from this state when the given action is executed
         '''
-        state_final=None
-        return state_final
+        return state.update(action)
 
     def is_goal(self, state):
         '''Returns true if state is the final state
