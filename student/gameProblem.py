@@ -6,43 +6,6 @@
 import simpleai.search
 from simpleai.search import SearchProblem, astar
 
-# --------------- State Definition -----------------
-
-class GameState:
-        
-    def __init__(self, position, goals):
-        self.position = position # tuple (x,y)
-        self.goals = goals # list of [(x1,y1), (x2, y2), ...]
-
-    def __hash__(self):
-        return hash(repr(self))
-
-    def __eq__(self, other):
-        return isinstance(other, GameState) and other.position == self.position and other.goals == self.goals
-
-    def __str__(self):
-        return "State: < %s %s > " % (self.position, self.goals)
-
-    def update(self, action):
-
-        # update position
-        if action is "East":
-            new_position = (self.position[0]+1, self.position[1]) 
-        elif action is "West":
-            new_position = (self.position[0]-1, self.position[1])
-        elif action is "North":
-            new_position = (self.position[0], self.position[1]+1)
-        elif action is "South":
-            new_position = (self.position[0], self.position[1]-1)
-
-        # if at goal, mark as visited
-        new_goals = self.goals
-        if new_position in self.goals:
-            new_goals.remove(new_position)  
-
-        return GameState(new_position, new_goals)
-        
-
 # --------------- GameProblem Definition -----------------
 
 class GameProblem(SearchProblem):
@@ -67,8 +30,8 @@ class GameProblem(SearchProblem):
 
         # current state information
         actions = []
-        map = self.CONFIG.get("map_size")
-        pos = state.position
+        map_size = self.CONFIG.get("map_size")
+        pos = state[0]
 
         # potential moves
         pos_east = (pos[0]+1, pos[1])
@@ -76,14 +39,14 @@ class GameProblem(SearchProblem):
         pos_north = (pos[0], pos[1]+1)
         pos_south = (pos[0], pos[1]-1)
         
-        
-        if self.can_fly(pos_east, map):
+        # append to action list if valid move
+        if self.can_fly(pos_east, map_size):
             actions.append('East')
-        if self.can_fly(pos_west, map):
+        if self.can_fly(pos_west, map_size):
             actions.append('West')
-        if self.can_fly(pos_north, map):
+        if self.can_fly(pos_north, map_size):
             actions.append('North')
-        if self.can_fly(pos_south, map):
+        if self.can_fly(pos_south, map_size):
             actions.append('South')
       
         return actions
@@ -91,14 +54,30 @@ class GameProblem(SearchProblem):
     def result(self, state, action):
         '''Returns the state reached from this state when the given action is executed
         '''
-        return state.update(action)
+        pos = state[0]
+        goals_left = state[1]
+
+        # update position
+        if action is "East":
+            new_position = (pos[0]+1, pos[1])
+        elif action is "West":
+            new_position = (pos[0]-1, pos[1])
+        elif action is "North":
+            new_position = (pos[0], pos[1]+1)
+        elif action is "South":
+            new_position = (pos[0], pos[1]-1)
+
+        # if at goal, update goal set
+        if new_position in goals_left:
+            s = set()
+            s.add(new_position)
+            goals_left -= frozenset(s)
+
+        return (new_position, goals_left)
 
     def is_goal(self, state):
         '''Returns true if state is the final state
-        ''' 
-        print(state)
-        print(self.GOAL)
-        print(state == self.GOAL)
+        '''     
         return state == self.GOAL
 
     def cost(self, state, action, state2):
@@ -106,34 +85,34 @@ class GameProblem(SearchProblem):
            The returned value is a number (integer or floating point).
            By default this function returns `1`.
         '''
-        cost =  self.getAttribute(state2.position, "cost") 
+        cost = self.getAttribute(state2[0], "cost") 
         if cost is not None:
             return cost
-        return 100
+        return 1000
 
     def heuristic(self, state):
         '''Returns the heuristic for `state`
         '''
-        current = state.position
-        goals_left = state.goals
+        current = state[0]
+        goals_left = state[1]
         
         if len(goals_left) > 0:
-            minimum = self.dist(current, goals_left[0])
+            goal_distances = set()
+
             for location in goals_left:
-                distance = self.dist(current, location)
-                if distance < minimum:
-                    minimum = distance
-            return minimum 
+                goal_distances.add(self.dist(current, location))
+
+            return min(goal_distances) + (30 * len(goals_left))
         else:
             return self.dist(current, self.AGENT_START)
 
     def setup (self):
 
-        base = self.CONFIG.get("agentInit")
-        goals = self.POSITIONS.get("goal")
+        base = tuple(self.CONFIG.get("agentInit"))
+        goals = frozenset(self.POSITIONS.get("goal"))
 
-        initial_state = GameState(base, goals)
-        final_state = GameState(base, [])
+        initial_state = (base, goals)
+        final_state = (base, frozenset())
         algorithm = astar   
         
         return initial_state,final_state,algorithm
@@ -150,6 +129,7 @@ class GameProblem(SearchProblem):
         ex, ey = end
         return abs(ex - sx) + abs(ey - sy)
 
+    
     # -------------------------------------------------------------- #
     # --------------- DO NOT EDIT BELOW THIS LINE  ----------------- #
     # -------------------------------------------------------------- #
