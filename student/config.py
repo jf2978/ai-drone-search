@@ -5,6 +5,8 @@ configuration = {
 "seed": None,
 "file": "./map.txt",
 "map_size": [10, 5],
+"station": [2,1],
+"capacity": 20,
 "delay": 0.1,
 "debugMap": False,
 "debug": False,
@@ -37,9 +39,9 @@ configuration = {
         "img": "game/graphics/terrains/plains100.png",
         "id":  "plains",
         "marker": 'P',
-        "num": 0,
+        "num": 10,
         "attributes":
-             {"agent":None,"cost": 1}
+             {"agent":None,"cost": 3}
         },
     "plains-traversed": {
         "img": "game/graphics/terrains/plainsTraversed100.png",
@@ -47,15 +49,15 @@ configuration = {
         "marker": 'p',
         "num": 0,
         "attributes":
-             {"agent":None,"cost": 1}
+             {"agent":None,"cost": 3}
         },
     "hills": {
         "img": "game/graphics/terrains/hills100.png",
         "id":  "hills",
         "marker": 'H',
-        "num": 0,
+        "num": 5,
         "attributes":
-             {"agent":None,"cost": 1},
+             {"agent":None,"cost": 5},
         },
     "hills-traversed": {
         "img": "game/graphics/terrains/hillsTraversed100.png",
@@ -63,7 +65,7 @@ configuration = {
         "marker": 'h',
         "num": 0,
         "attributes":
-             {"agent":None,"cost": 1},
+             {"agent":None,"cost": 5},
         },
     "forest": {
         "img": "game/graphics/terrains/forest100.png",
@@ -71,7 +73,7 @@ configuration = {
         "marker": 'F',
         "num": 5,
         "attributes":
-             {"agent":None,"cost": 1},
+             {"agent":None,"cost": 7},
         },
     "forest-traversed": {
         "img": "game/graphics/terrains/forestTraversed100.png",
@@ -79,7 +81,7 @@ configuration = {
         "marker": 'f',
         "num": 0,
         "attributes":
-             {"agent":None,"cost": 1},
+             {"agent":None,"cost": 7},
         },
     "sea": {
         "img": "game/graphics/terrains/sea100.png",

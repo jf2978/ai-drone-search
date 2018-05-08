@@ -31,6 +31,7 @@ class GameProblem(SearchProblem):
         # current state information
         actions = []
         pos = state[0]
+        battery = state[2]
 
         # potential moves
         pos_east = (pos[0]+1, pos[1])
@@ -39,13 +40,13 @@ class GameProblem(SearchProblem):
         pos_south = (pos[0], pos[1]+1)
         
         # append to action list if valid move
-        if self.can_fly(pos_east):
+        if self.can_fly(pos_east) and battery >= self.getAttribute(pos_east, "cost"):
             actions.append('East')
-        if self.can_fly(pos_west):
+        if self.can_fly(pos_west) and battery >= self.getAttribute(pos_west, "cost"):
             actions.append('West')
-        if self.can_fly(pos_north):
+        if self.can_fly(pos_north) and battery >= self.getAttribute(pos_north, "cost"):
             actions.append('North')
-        if self.can_fly(pos_south):
+        if self.can_fly(pos_south) and battery >= self.getAttribute(pos_south, "cost"):
             actions.append('South')
       
         return actions
@@ -55,6 +56,7 @@ class GameProblem(SearchProblem):
         '''
         pos = state[0]
         goals_left = state[1]
+        battery = state[2]
 
         # update position
         if action is "East":
@@ -66,18 +68,23 @@ class GameProblem(SearchProblem):
         elif action is "South":
             new_position = (pos[0], pos[1]+1)
 
+        #update battery
+        new_battery = battery - self.getAttribute(new_position, "cost")
+        if tuple(self.CONFIG.get("station")) == new_position:
+            new_battery = self.CONFIG.get("capacity")
+
         # if at goal, update goal set
         if new_position in goals_left:
             s = set()
             s.add(new_position)
             goals_left -= frozenset(s)
 
-        return (new_position, goals_left)
+        return (new_position, goals_left, new_battery)
 
     def is_goal(self, state):
-        '''Returns true if state is the final state
+        '''Returns true if state is the final state (ignores battery)
         '''     
-        return state == self.GOAL
+        return state[0] == self.GOAL[0] and state[1] == self.GOAL[1]
 
     def cost(self, state, action, state2):
         '''Returns the cost of applying `action` from `state` to `state2`.
@@ -112,9 +119,10 @@ class GameProblem(SearchProblem):
 
         base = self.AGENT_START
         goals = frozenset(self.POSITIONS.get("goal"))
+        battery = self.CONFIG.get("capacity")
 
-        initial_state = (base, goals)
-        final_state = (base, frozenset())
+        initial_state = (base, goals, battery)
+        final_state = (base, frozenset(), 0)
         algorithm = astar   
         
         return initial_state,final_state,algorithm
